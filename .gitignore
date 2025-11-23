@@ -1,0 +1,76 @@
+# Default ignored files
+/shelf/
+/.idea/*
+/.idea/workspace.xml
+/.vscode
+# Environment-dependent path to Maven home directory
+/mavenHomeManager.xml
+
+# Java Classes Files
+*.class
+
+# Build outputs
+/target/
+/build/
+/out/
+/bin/
+/dist/
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+build/
+
+# JaCoCo Code Coverage Reports
+/jacoco.exec
+/jacoco.xml
+/jacoco-it.exec
+/.jacocorc
+/jacoco*.html
+/jacoco*.xml
+/target/site/jacoco/
+/build/reports/jacoco/
+/coverage/
+
+# IDE
+*.iws
+*.iml
+*.ipr
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

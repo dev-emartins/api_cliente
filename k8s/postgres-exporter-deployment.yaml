@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-exporter
+  template:
+    metadata:
+      labels:
+        app: postgres-exporter
+    spec:
+      containers:
+        - name: exporter
+          image: prometheuscommunity/postgres-exporter
+          env:
+            - name: DATA_SOURCE_NAME
+              value: "postgresql://postgres:root1425@postgres:5432/local?sslmode=disable"
+          ports:
+            - containerPort: 9187

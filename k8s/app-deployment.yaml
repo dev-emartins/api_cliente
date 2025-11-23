@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app_cliente
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app_cliente
+  template:
+    metadata:
+      labels:
+        app: app_cliente
+    spec:
+      containers:
+        - name: app_cliente
+          image: app_cliente:1.0
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/local
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: root1425
+          ports:
+            - containerPort: 8080

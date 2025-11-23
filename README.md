@@ -7,6 +7,7 @@ Esta é uma API RESTful completa para a gestão de clientes, desenvolvida com Sp
 **Ferramentas e Ambiente:**
 * **Java 21+**: A versão da JDK necessária para compilar e rodar a aplicação.
 * **Gradle**: O sistema de build utilizado para gerenciar dependências e tarefas do projeto.
+* **Docker e Docker Compose**: Necessários para executar o banco de dados PostgreSQL e o stack de monitoramento.
 * **Plugin do Lombok para a IDE**: Essencial para evitar erros de compilação, já que o projeto utiliza anotações do Lombok (como `@Data`).
 
 **Principais Tecnologias do Projeto:**
@@ -21,23 +22,23 @@ Esta é uma API RESTful completa para a gestão de clientes, desenvolvida com Sp
 
 1.  Clone o projeto:
 
-<!-- end list -->
-
 ```bash
-git clone https://github.com/dev-emartins/app_cliente.git
+git clone https://github.com/dev-emartins/api_cliente.git
 ```
 
 2.  Acesse a pasta:
 
-<!-- end list -->
-
 ```bash
-cd app_cliente/
+cd api_cliente/
 ```
 
-3.  Rode o projeto com:
+3.  Inicie os containers do Docker (PostgreSQL, Prometheus e Grafana):
 
-<!-- end list -->
+```bash
+docker-compose up -d
+```
+
+4.  Rode o projeto com:
 
 ```bash
 ./gradlew bootRun
@@ -45,15 +46,22 @@ cd app_cliente/
 
 ### Banco de Dados
 
-  - **H2 Database (em memória)**: Banco de dados em memória para desenvolvimento.
-  - **Flyway**: Gerencia as migrações e a criação das tabelas automaticamente na inicialização da aplicação.
-  - Acesse o H2 console em: `http://localhost:8080/h2-console`
-  - JDBC URL: `jdbc:h2:mem:tarefa_db`
+- **PostgreSQL (Docker)**: Banco de dados principal para ambiente de desenvolvimento e produção, executado em container Docker.
+- **H2 Database (em memória)**: Banco de dados em memória utilizado exclusivamente para testes de integração.
+- **Flyway**: Gerencia as migrações e a criação das tabelas automaticamente na inicialização da aplicação.
+- Acesse o H2 console em: `http://localhost:8080/h2-console`
+- JDBC URL: `jdbc:h2:mem:tarefa_db`
 
-### Saúde do projeto
+### Monitoramento e Métricas
 
-  - **Spring Boot Actuator**: Monitora a saúde e o status da aplicação.
-  - Acesse o Actuator em: `http://localhost:8080/actuator/health`
+- **Spring Boot Actuator**: Monitora a saúde e o status da aplicação.
+- **Prometheus**: Coleta e armazena as métricas da aplicação.
+- **Grafana**: Dashboard para visualização das métricas coletadas pelo Prometheus.
+
+**Endpoints de Monitoramento:**
+- Acesse o Actuator em: `http://localhost:8080/actuator/health`
+- Acesse o Prometheus em: `http://localhost:9090`
+- Acesse o Grafana em: `http://localhost:3000` (usuário/senha: admin/admin)
 
 ### Arquitetura e Conceitos-Chave
 
@@ -84,7 +92,6 @@ Todos os endpoints que retornam listas de clientes utilizam paginação para lid
     * `size`: O número de itens por página.
     * `sort`: A propriedade do objeto pela qual ordenar, seguida pela direção (ex: `nome,asc` ou `email,desc`).
 
-
 ## Endpoints da API
 
 A API oferece um conjunto completo de endpoints RESTful para o gerenciamento de clientes. As respostas incluem links **HATEOAS** para facilitar a descoberta de recursos e a navegação.
@@ -104,11 +111,11 @@ A API oferece um conjunto completo de endpoints RESTful para o gerenciamento de 
 
 O projeto é estruturado em camadas para garantir a separação de responsabilidades e a manutenibilidade:
 
-  - **Controller (`ClienteController`)**: Responsável por lidar com as requisições HTTP, validar os dados de entrada e delegar a lógica de negócio para a camada de serviço. Também aplica a lógica **HATEOAS** para enriquecer a resposta.
-  - **Service (`ClienteService`)**: Contém a lógica de negócio. Gerencia as transações, valida dados (como e-mail duplicado) e interage com a camada de repositório.
-  - **Repository (`ClienteRepository`)**: Camada de acesso a dados. Utiliza Spring Data JPA para interagir com o banco de dados.
-  - **DTOs (`ClienteRequestDTO`, `ClienteResponseDTO`)**: Objetos de Transferência de Dados, usados para desacoplar as camadas e garantir que a entidade de domínio (`Cliente`) não seja exposta diretamente.
-  - **Assembler (`ClienteResponseDTOAssembler`)**: Uma classe dedicada que converte os DTOs puros do serviço em modelos de representação HATEOAS, adicionando os links de navegação.
+- **Controller (`ClienteController`)**: Responsável por lidar com as requisições HTTP, validar os dados de entrada e delegar a lógica de negócio para a camada de serviço. Também aplica a lógica **HATEOAS** para enriquecer a resposta.
+- **Service (`ClienteService`)**: Contém a lógica de negócio. Gerencia as transações, valida dados (como e-mail duplicado) e interage com a camada de repositório.
+- **Repository (`ClienteRepository`)**: Camada de acesso a dados. Utiliza Spring Data JPA para interagir com o banco de dados.
+- **DTOs (`ClienteRequestDTO`, `ClienteResponseDTO`)**: Objetos de Transferência de Dados, usados para desacoplar as camadas e garantir que a entidade de domínio (`Cliente`) não seja exposta diretamente.
+- **Assembler (`ClienteResponseDTOAssembler`)**: Uma classe dedicada que converte os DTOs puros do serviço em modelos de representação HATEOAS, adicionando os links de navegação.
 
 -----
 
@@ -116,17 +123,17 @@ O projeto é estruturado em camadas para garantir a separação de responsabilid
 
 Este projeto utiliza e demonstra diversos conceitos e tecnologias importantes:
 
-  - **Spring HATEOAS**: Implementa o HATEOAS para criar APIs autodocumentáveis, onde os links são parte da resposta.
-  - **Spring Data JPA**: Facilita a interação com o banco de dados usando repositórios, com métodos de consulta customizados.
-      - Anotações de Relacionamento: `@OneToOne`, `@OneToMany`, `@ManyToOne`.
-      - Mapeamento: `mappedBy`, `@JoinColumn`.
-  - **SpringDoc OpenAPI / Swagger UI**: Gera a documentação da API de forma automática.
-      - Anotações: `@Tag`, `@Operation`, `@ApiResponses`, `@Parameter`, `@RequestBody`.
-      - Configuração: Personalizada para lidar corretamente com o objeto `Pageable`.
-  - **Bean Validation**: Garante a integridade dos dados de entrada antes que cheguem à camada de serviço.
-      - Anotações: `@Validated`, `@NotBlank`, `@Email`, `@Size`.
-  - **Lombok**: Reduz a verbosidade do código com anotações como `@Data` e `@AllArgsConstructor`.
-  - **Segurança de Nulidade**: Utiliza anotações como `@NonNull` e `@NonNullApi` para garantir contratos de nulidade e prevenir `NullPointerException`s em tempo de compilação.
+- **Spring HATEOAS**: Implementa o HATEOAS para criar APIs autodocumentáveis, onde os links são parte da resposta.
+- **Spring Data JPA**: Facilita a interação com o banco de dados usando repositórios, com métodos de consulta customizados.
+    - Anotações de Relacionamento: `@OneToOne`, `@OneToMany`, `@ManyToOne`.
+    - Mapeamento: `mappedBy`, `@JoinColumn`.
+- **SpringDoc OpenAPI / Swagger UI**: Gera a documentação da API de forma automática.
+    - Anotações: `@Tag`, `@Operation`, `@ApiResponses`, `@Parameter`, `@RequestBody`.
+    - Configuração: Personalizada para lidar corretamente com o objeto `Pageable`.
+- **Bean Validation**: Garante a integridade dos dados de entrada antes que cheguem à camada de serviço.
+    - Anotações: `@Validated`, `@NotBlank`, `@Email`, `@Size`.
+- **Lombok**: Reduz a verbosidade do código com anotações como `@Data` e `@AllArgsConstructor`.
+- **Segurança de Nulidade**: Utiliza anotações como `@NonNull` e `@NonNullApi` para garantir contratos de nulidade e prevenir `NullPointerException`s em tempo de compilação.
 
 -----
 
@@ -138,8 +145,8 @@ O projeto conta com uma suíte completa de testes automatizados que garantem o c
 
 | Tipo                     | Camada                    | Descrição                                                                                                                           |
 | ------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Testes Unitários**     | *Service / Mapper*        | Validam a lógica isolada de cada componente, como mapeamentos entre DTOs e entidades, regras de validação e tratamento de exceções. |
-| **Testes de Integração** | *Controller / Repository* | Garantem que os componentes funcionem corretamente em conjunto, verificando endpoints REST, persistência e comportamento HATEOAS.   |
+| **Testes Unitários**     | *Service / Mapper*        | Validam a lógica isolada de cada componente, como mapeamentos entre DTOs e entidades, regras de validação e tratamento de exceções. Utilizam **JaCoCo** para cobertura de código. |
+| **Testes de Integração** | *Controller / Repository* | Garantem que os componentes funcionem corretamente em conjunto, verificando endpoints REST, persistência e comportamento HATEOAS. Utilizam **H2 Database** como banco em memória. |
 
 ---
 
@@ -149,6 +156,18 @@ Para rodar todos os testes automatizados, use:
 
 ```bash
 ./gradlew test
+```
+
+Para gerar relatório de cobertura com JaCoCo:
+
+```bash
+./gradlew jacocoTestReport
+```
+
+Para verificar a cobertura mínima de testes:
+
+```bash
+./gradlew jacocoTestCoverageVerification
 ```
 
 Os relatórios de cobertura de código (gerados pelo **JaCoCo**) podem ser encontrados após a execução em:
@@ -167,25 +186,27 @@ Abra o arquivo `index.html` em seu navegador para visualizar a cobertura detalha
 * **Mockito** — Criação de mocks e simulação de comportamentos para testar regras de negócio.
 * **Spring Boot Test / MockMvc** — Testes de integração com contexto real da aplicação.
 * **JaCoCo** — Geração de relatórios de cobertura de código.
+* **H2 Database** — Banco de dados em memória para testes de integração.
+* **PostgreSQL** — Banco de dados principal para desenvolvimento e produção (via Docker).
 
 ---
 
 ### **Estrutura dos Testes**
 
-**Testes Unitários:**
+**Testes Unitários (com JaCoCo):**
 
 * `ClienteServiceTest`:
-
     * Verifica a criação, atualização, exclusão e busca de clientes.
     * Testa cenários de exceção (ex: cliente inexistente, e-mail duplicado).
+    * Cobertura de código medida pelo JaCoCo.
 
-**Testes de Integração:**
+**Testes de Integração (com H2):**
 
 * `ClienteControllerIT`:
-
     * Simula chamadas HTTP reais com `MockMvc`.
     * Testa criação, atualização, busca e exclusão de clientes via endpoints REST.
     * Valida respostas com links **HATEOAS** e status HTTP esperados.
+    * Utiliza H2 Database como banco em memória para isolamento dos testes.
 
 ---
 
@@ -195,3 +216,32 @@ Abra o arquivo `index.html` em seu navegador para visualizar a cobertura detalha
 * **Banco de dados em memória (H2):** garante reprodutibilidade dos testes de integração.
 * **Transações revertidas automaticamente:** uso de `@Transactional` evita persistência entre testes.
 * **Validação de logs e mensagens de erro:** garante clareza em casos de falhas.
+* **Cobertura de código com JaCoCo:** garante qualidade e confiabilidade do código através de métricas de cobertura.
+* **Separação de ambientes:** PostgreSQL para desenvolvimento/produção, H2 para testes.
+
+---
+
+## Monitoramento com Prometheus e Grafana
+
+O projeto inclui configuração completa para monitoramento:
+
+### **Configuração do Prometheus**
+- Coleta métricas do Spring Boot Actuator
+- Configurado para scraping automático
+- Armazena métricas de performance e saúde da aplicação
+
+### **Dashboards do Grafana**
+- Visualização em tempo real das métricas
+- Monitoramento de:
+  - Saúde da aplicação
+  - Performance de endpoints
+  - Métricas de JVM
+  - Tráfego da API
+  - Status do banco de dados
+
+### **Métricas Coletadas**
+- Taxa de requisições por segundo
+- Tempo de resposta dos endpoints
+- Uso de memória e CPU
+- Status das conexões com o banco
+- Health checks da aplicação

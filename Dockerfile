@@ -2,7 +2,7 @@ FROM eclipse-temurin:21-jdk-alpine AS build
 
 WORKDIR /app_cliente
 
-COPY gradlew settings.gradle ./
+COPY gradlew gradlew.bat settings.gradle ./
 COPY gradle ./gradle
 COPY build.gradle ./
 
